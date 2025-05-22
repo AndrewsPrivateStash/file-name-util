@@ -1,13 +1,18 @@
 <pre>
-renaming util, that can recursively rename files, directories, or both; mapping the names to arious format type {snake, camel, space}.
+Renaming util, that can recursively rename files, directories, or both;
+mapping the names to arious format type {snake, camel, space}.
 
-When the -f flag is not set, it will parse the name automatically splitting on spaces, _, and common seperator chars: {. , / + -} then treat ach element in the resultant list as camel case (effectively it look for all formats)
+When the -f flag is not set, it will parse the name automatically splitting on spaces, _,
+and common seperator chars: {. , / + -} then treat ach element in the resultant list
+as camel case (effectively it look for all formats)
 
-the -l flag only prints what the util would rename files to, but doesn't modify anything, which is useful for testing the command before commiting the changes.
+The -l flag only prints what the util would rename files to, but doesn't modify anything,
+which is useful for testing the command before commiting the changes.
 
-generally I'd suggest throwing a shebang at the top `#! /usr/bin/env python3` and droping the script in a personal bin dir in your PATH, (chmod 751) to allow for easy calling.
+Generally I'd suggest throwing a shebang at the top `#! /usr/bin/env python3`
+and droping the script in a personal bin dir in your PATH, (chmod 751) to allow for easy calling.
 
-typical flow:
+Typical flow:
     $tree [dir]                         -- what is there
     $rename_files -l [other args] [dir] -- see what it will do
     $rename_files [other args] [dir]    -- then do it
