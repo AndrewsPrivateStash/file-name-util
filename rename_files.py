@@ -95,13 +95,44 @@ def cam_parse(s: str) -> list[str]:
 	return out
 
 
-def parse(s: str, a: argparse.Namespace) -> list[str] | None:
+def replace_char(s: str, find: str, rpl: str) -> str:
+	return s.replace(find, rpl)
+
+
+def auto_parse(s: str, a: argparse.Namespace) -> list[str]:
+	""" sequence parse the string for all type
+			:param s: filename string (sans the jank)
+	"""	
+
+	# swap chars in string
+	for c in a.Swap:
+		s = s.replace(c, '_')
+
+	# space split
+	sp_split = s.split()
+
+	# _ split
+	under_split =[]
+	for elem in sp_split:
+		under_split.append(elem.split('_'))
+
+	under_split = flatten(under_split)
+
+	# cam split
+	cam_split = []
+	for elem in under_split:
+		cam_split.append(cam_parse(elem))
+
+	return flatten(cam_split)
+
+
+def parse(s: str, a: argparse.Namespace) -> list[str]:
 	""" parse string without extension
 		:param s: the string to parse
 		:param type: string format {cam, snake, space}
 	"""
 	if not s:
-		return None		# handle in caller
+		return [""]
 	
 	use_str = s
 	if a.JankRemove:
@@ -110,7 +141,8 @@ def parse(s: str, a: argparse.Namespace) -> list[str] | None:
 	
 	use_type = a.From
 	if a.From == "auto":
-		use_type = detect(use_str)
+		# use_type = detect(use_str)
+		return auto_parse(use_str, a)
 	
 	if use_type == "space":
 		return use_str.split()
@@ -120,33 +152,51 @@ def parse(s: str, a: argparse.Namespace) -> list[str] | None:
 
 	if use_type == "cam":
 		return cam_parse(use_str)
+	
+	return [""]
 
 
-def make_type(ls: list[str], type: str) -> str | None:
+def make_type(ls: list[str], a: argparse.Namespace) -> str:
 	""" make string of type from parsed elements
 		:param ls: the parsed elements
 		:param type: string format {cam, snake, space}
 	"""
+	type = a.To
 	if not type in ["cam", "snake", "space"] or len(ls) == 0:
-		return None
+		return ""
 
+	out_str = ""
 	if type == "space":
-		return ' '.join(ls)
+		out_str = ' '.join(ls)
 	
 	if type == "snake":
 		tmp = '_'.join(ls)
-		return tmp.lower()
+		if a.PreserveCase:
+			out_str = tmp
+		else:
+			out_str = tmp.lower()
 
 	if type == "cam":
 		tmp = ''.join([x.title() for x in ls])
-		return tmp[0].lower() + tmp[1:]
+		if a.PreserveCase:
+			out_str = tmp
+		else:
+			out_str = tmp[0].lower() + tmp[1:]
+	
+	return out_str
 		
 
 def mod_file_name(fn: str, a: argparse.Namespace) -> str:
 	base = os.path.splitext(fn)[0]
 	ext = os.path.splitext(fn)[1]
 	parsed_base = parse(base, a)
-	mod_base = make_type(parsed_base, a.To)
+	if parsed_base[0] == "":
+		raise ValueError(f'could not parse: {fn}')
+	
+	mod_base = make_type(parsed_base, a)
+	if mod_base == "":
+		raise ValueError(f'to_type: {a.To} not reccognized')
+	
 	return mod_base + ext
 
 
@@ -185,7 +235,8 @@ def proc_files(p: str, a: argparse.Namespace, cnts = [0,0]):
 			if not is_ext_ok(p, a):
 				return cnts
 			
-			mod_fn = mod_file_name(p, a)
+			fp = os.path.basename(p)
+			mod_fn = mod_file_name(fp, a)
 			if mod_fn == p:		# no update
 				return cnts
 			
@@ -283,6 +334,12 @@ def main():
 	)
 
 	parser.add_argument(
+		'-p', '--PreserveCase',
+		help="preserve the case in names found",
+		action="store_true"
+	)
+
+	parser.add_argument(
 		'-d', '--IncludeDirs',
 		help="process directory names as well",
 		action="store_true"
@@ -312,6 +369,13 @@ def main():
 		help="string with jank chars to remove from file name",
 		type=str,
 		default=None
+	)
+
+	parser.add_argument(
+		'-s', '--Swap',
+		help="swap chars to replace with _",
+		type=str,
+		default=".-/+,"
 	)
 
 	parser.add_argument(
