@@ -1,10 +1,10 @@
 <pre>
 Renaming util, that can recursively rename files, directories, or both;
-mapping the names to arious format type {snake, camel, space}.
+mapping the names to various format type {snake, camel, space}.
 
 When the -f flag is not set, it will parse the name automatically splitting on spaces, _,
-and common seperator chars: {. , / + -} then treat ach element in the resultant list
-as camel case (effectively it look for all formats)
+and common seperator chars: {. , / + -} then treat each element in the resultant list
+as camel case (effectively it looks for all formats)
 
 The -l flag only prints what the util would rename files to, but doesn't modify anything,
 which is useful for testing the command before commiting the changes.
