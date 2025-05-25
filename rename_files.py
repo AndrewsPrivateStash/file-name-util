@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 
 """
 	Andrew Pfaendler
@@ -202,7 +203,7 @@ def mod_file_name(fn: str, a: argparse.Namespace) -> str:
 
 def mod_dir_name(dn: str, a: argparse.Namespace) -> str:
 	parsed_base = parse(dn, a)
-	return make_type(parsed_base, a.To)
+	return make_type(parsed_base, a)
 
 
 def rename_path(path: str, new_path: str) -> int:
